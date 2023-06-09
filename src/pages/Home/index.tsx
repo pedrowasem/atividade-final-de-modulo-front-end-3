@@ -3,7 +3,7 @@ import React from 'react';
 import reactLogo from '/assets/react.svg';
 import viteLogo from '/assets/vite.svg';
 
-const Welcome: React.FC = () => {
+const Home: React.FC = () => {
 	return (
 		<div className="App">
 			<div>
@@ -19,4 +19,4 @@ const Welcome: React.FC = () => {
 	);
 };
 
-export default Welcome;
+export default Home;

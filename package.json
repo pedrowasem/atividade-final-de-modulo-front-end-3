@@ -14,13 +14,24 @@
 		"format": "npm run prettier:fix && npm run lint:fix"
 	},
 	"dependencies": {
+		"@emotion/react": "^11.10.6",
+		"@emotion/styled": "^11.10.6",
+		"@mui/icons-material": "^5.11.16",
+		"@mui/material": "^5.12.0",
+		"@reduxjs/toolkit": "^1.9.5",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
-		"react-router-dom": "6.4"
+		"react-redux": "^8.0.5",
+		"react-router-dom": "6.4",
+		"redux-persist": "^6.0.0",
+		"styled-components": "^5.3.9",
+		"uuid": "^9.0.0"
 	},
 	"devDependencies": {
 		"@types/react": "^18.0.28",
 		"@types/react-dom": "^18.0.11",
+		"@types/styled-components": "^5.1.26",
+		"@types/uuid": "^9.0.1",
 		"@typescript-eslint/eslint-plugin": "^5.58.0",
 		"@typescript-eslint/parser": "^5.58.0",
 		"@vitejs/plugin-react": "^3.1.0",
