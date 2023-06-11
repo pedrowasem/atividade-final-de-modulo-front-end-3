@@ -4,10 +4,11 @@ interface ButtonProps {
 	context: 'Login' | 'Modal';
 	children: string;
 	type: 'button' | 'submit' | 'reset' | undefined;
+	disabled?: boolean;
 	onClick?: React.MouseEventHandler<HTMLButtonElement> | undefined;
 }
 
-const StyledButton: React.FC<ButtonProps> = ({ children, type, onClick, context }) => {
+const StyledButton: React.FC<ButtonProps> = ({ children, type, onClick, context, disabled }) => {
 	let width = '30%';
 	let marginBottom = '0';
 
@@ -17,10 +18,11 @@ const StyledButton: React.FC<ButtonProps> = ({ children, type, onClick, context 
 	}
 	return (
 		<Button
-			variant="outlined"
 			color="secondary"
+			variant="outlined"
 			type={type}
 			onClick={onClick}
+			disabled={disabled}
 			sx={{
 				boxSizing: 'border-box',
 				outline: '0',
@@ -32,7 +34,6 @@ const StyledButton: React.FC<ButtonProps> = ({ children, type, onClick, context 
 				boxShadow: '-5px -5px 10px #ffffff8a, 5px 5px 10px #babecc7c',
 				width: width,
 				transition: '0.2s ease-in-out',
-				color: '#ffffff',
 				'&:hover, &:focus': {
 					boxShadow: '-2px -2px 5px #fff, 2px 2px 5px #babecc',
 					border: 'none',

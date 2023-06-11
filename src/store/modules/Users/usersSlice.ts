@@ -1,43 +1,24 @@
-// TIPO DE DADO = ARRAY DE USER
-// ADAPTER
-
-// USER
-// email e senha
-// chave primaria - dado que não pode se repetir? Email
-
 import { createEntityAdapter, createSlice } from '@reduxjs/toolkit';
 
 import { RootState } from '../..';
 import { User } from '../../types/User';
 
 const usersAdapter = createEntityAdapter<User>({
-	selectId: (estado) => estado.email,
+	selectId: (state) => state.email,
 });
 
-export const { selectAll: buscarUsuarios } = usersAdapter.getSelectors(
+export const { selectAll: getUser } = usersAdapter.getSelectors(
 	(global: RootState) => global.users,
 );
-
-/*
-
-{
-    ids: [],
-    entities: {
-        
-    }
-}
-
-*/
 
 const usersSlice = createSlice({
 	name: 'users',
 	initialState: usersAdapter.getInitialState(),
 	reducers: {
-		adicionarUsuario: usersAdapter.addOne,
+		addUser: usersAdapter.addOne,
 	},
 });
 
-// separar actions do reducer
-export const { adicionarUsuario } = usersSlice.actions;
+export const { addUser } = usersSlice.actions;
 
 export default usersSlice.reducer;

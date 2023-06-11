@@ -9,7 +9,8 @@ import StyledButton from '../../Components/StyledButton';
 import StyledTextField from '../../Components/StyledTextField';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { hideLoading, showLoading } from '../../store/modules/Loading/loadingSlice';
-import { buscarUsuarios } from '../../store/modules/Users/usersSlice';
+import { showSnackBar } from '../../store/modules/SnackBar/snackBarSlice';
+import { getUser } from '../../store/modules/Users/usersSlice';
 import { IsValidCredentials } from '../../types/IsValidCredentials';
 import { emailRegex } from '../../utils/validators/regexData';
 
@@ -24,11 +25,9 @@ const Login: React.FC = () => {
 		isValid: false,
 	});
 
-	const [isError, setIsError] = useState<boolean>(false);
-	const [message, setMessage] = useState<string>('');
-
 	const navigate = useNavigate();
-	const select = useAppSelector(buscarUsuarios);
+	const select = useAppSelector(getUser);
+
 	const dispatch = useAppDispatch();
 
 	useEffect(() => {
@@ -56,33 +55,18 @@ const Login: React.FC = () => {
 		setIsLogged(checked);
 	};
 
-	const verifySnack = (error: boolean) => {
-		if (error === true) {
-			setMessage('Erro ao tentar logar.');
-			setIsError(error);
-			return;
-		}
-	};
-
-	const handleClickOpen = () => {
+	const handleClickOpenModal = () => {
 		setIsOpen(true);
-	};
-
-	const handleClose = (event: React.SyntheticEvent | Event, reason?: string) => {
-		if (reason === 'clickaway') {
-			return;
-		}
-
-		setIsError(false);
 	};
 
 	const verifyUserExists = () => {
 		const user = select.find((user) => {
-			return user.email === email && user.senha === password;
+			return user.email === email && user.password === password;
 		});
 
 		if (!user) {
-			verifySnack(false);
+			dispatch(showSnackBar('Erro ao realizar o login'));
+
 			return;
 		}
 
@@ -128,11 +112,9 @@ const Login: React.FC = () => {
 					event.preventDefault();
 
 					if (!emailIsValid.isValid || email.length === 0) {
-						verifySnack(true);
+						dispatch(showSnackBar('Erro ao realizar o login'));
 						return;
 					}
-					console.log(email, password);
-
 					verifyUserExists();
 				}}>
 				<Grid
@@ -140,7 +122,7 @@ const Login: React.FC = () => {
 					sx={{
 						alignItems: 'center',
 						justifyContent: 'space-around',
-						height: '100vh',
+						height: '93vh',
 					}}>
 					<Grid item>
 						<Typography variant="h1">NoteHub</Typography>
@@ -161,7 +143,6 @@ const Login: React.FC = () => {
 						</Typography>
 						<StyledTextField
 							placeholder="E-mail"
-							required
 							error={!emailIsValid.isValid}
 							helperText={emailIsValid.helperText}
 							value={email}
@@ -171,7 +152,6 @@ const Login: React.FC = () => {
 						/>
 						<StyledTextField
 							placeholder="Senha"
-							required
 							value={password}
 							onChange={(event) => {
 								setPassword(event.currentTarget.value);
@@ -194,19 +174,15 @@ const Login: React.FC = () => {
 								component={'button'}
 								type="button"
 								sx={{ textDecoration: 'underline' }}
-								onClick={handleClickOpen}>
+								onClick={handleClickOpenModal}>
 								Criar uma!
 							</Link>
 						</Typography>
-						<SnackBarComp
-							handleClose={handleClose}
-							message={message}
-							isError={isError}
-						/>
+						<SnackBarComp />
 					</Grid>
 				</Grid>
 			</Box>
-			<ModalSignupUser aberto={isOpen} mudarAberto={setIsOpen} />
+			<ModalSignupUser open={isOpen} changeOpen={setIsOpen} />
 			<Loading />
 		</>
 	);

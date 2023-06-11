@@ -6,39 +6,42 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import React, { useEffect, useState } from 'react';
 
-import { useAppDispatch } from '../../store/hooks';
-import { adicionarUsuario } from '../../store/modules/Users/usersSlice';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { showSnackBar } from '../../store/modules/SnackBar/snackBarSlice';
+import { addUser, getUser } from '../../store/modules/Users/usersSlice';
 import { IsValidCredentials } from '../../types/IsValidCredentials';
 import { emailRegex } from '../../utils/validators/regexData';
 import StyledButton from '../StyledButton';
 import StyledTextField from '../StyledTextField';
 
 interface ModalSignupUserProps {
-	aberto: boolean;
-	mudarAberto: React.Dispatch<React.SetStateAction<boolean>>;
+	open: boolean;
+	changeOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const ModalSignupUser: React.FC<ModalSignupUserProps> = ({ aberto, mudarAberto }) => {
-	// estados criados para controlar o que é digitado nos inputs
-	const [emailCadastro, setEmailCadastro] = useState<string>('');
-	const [senhaCadastro, setSenhaCadastro] = useState<string>('');
+const ModalSignupUser: React.FC<ModalSignupUserProps> = ({ open, changeOpen }) => {
+	const [emailRegister, setEmailRegister] = useState<string>('');
+	const [passwordRegister, setPasswordRegister] = useState<string>('');
+	const [confirmPasswordRegister, setConfirmPasswordRegister] = useState<string>('');
 
-	// estados criados para validação do que contem nos estados acima
 	const [errorEmail, setErrorEmail] = useState<IsValidCredentials>({
 		helperText: '',
 		isValid: true,
 	});
-	const [errorSenha, setErrorSenha] = useState<IsValidCredentials>({
+	const [errorPassword, setErrorPassword] = useState<IsValidCredentials>({
+		helperText: '',
+		isValid: true,
+	});
+	const [errorConfirmPassword, setErrorConfirmPassword] = useState<IsValidCredentials>({
 		helperText: '',
 		isValid: true,
 	});
 
-	// constroi um disparador de ações para modificar os dados da store
 	const dispatch = useAppDispatch();
+	const userList = useAppSelector(getUser);
 
-	// executa a callback sempre que o valor do estado é alterado
 	useEffect(() => {
-		if (emailCadastro.length && !emailRegex.test(emailCadastro)) {
+		if (emailRegister.length && !emailRegex.test(emailRegister)) {
 			setErrorEmail({
 				helperText: 'Informe um e-mail válido.',
 				isValid: false,
@@ -49,26 +52,50 @@ const ModalSignupUser: React.FC<ModalSignupUserProps> = ({ aberto, mudarAberto }
 				isValid: true,
 			});
 		}
-	}, [emailCadastro]);
+	}, [emailRegister]);
 
-	// executa a callback sempre que o valor do estado é alterado
 	useEffect(() => {
-		if (senhaCadastro.length && senhaCadastro.length < 6) {
-			setErrorSenha({
+		if (passwordRegister.length && passwordRegister.length < 6) {
+			setErrorPassword({
 				helperText: 'Cadastre uma senha com no mínimo 6 caracteres.',
 				isValid: false,
 			});
 		} else {
-			setErrorSenha({
+			setErrorPassword({
 				helperText: 'Utilize uma senha fácil de lembrar e anote para não esquecer.',
 				isValid: true,
 			});
 		}
-	}, [senhaCadastro]);
+	}, [passwordRegister]);
 
-	// lógica para fechar o modal - executa ao clique do botão
+	useEffect(() => {
+		if (confirmPasswordRegister.length && confirmPasswordRegister !== passwordRegister) {
+			setErrorConfirmPassword({
+				helperText: 'Senhas não conferem',
+				isValid: false,
+			});
+		} else {
+			setErrorConfirmPassword({
+				helperText: '',
+				isValid: true,
+			});
+		}
+	}, [confirmPasswordRegister, passwordRegister]);
+
 	const handleClose = () => {
-		mudarAberto(false);
+		changeOpen(false);
+		setEmailRegister('');
+		setPasswordRegister('');
+		setConfirmPasswordRegister('');
+	};
+
+	const verifyUserExists = () => {
+		const user = userList.find((user) => {
+			return user.email === emailRegister;
+		});
+		if (user) {
+			return true;
+		}
 	};
 
 	const handleSignupUser = (ev: React.FormEvent<HTMLFormElement>) => {
@@ -78,25 +105,40 @@ const ModalSignupUser: React.FC<ModalSignupUserProps> = ({ aberto, mudarAberto }
 			return;
 		}
 
-		// cadastrar um usuario no ESTADO GLOBAL
+		if (verifyUserExists()) {
+			dispatch(showSnackBar('Usuário já existente!'));
+			return;
+		}
+
+		if (
+			!errorEmail.isValid ||
+			!errorPassword.isValid ||
+			!errorConfirmPassword.isValid ||
+			!emailRegister ||
+			!passwordRegister ||
+			!confirmPasswordRegister
+		) {
+			dispatch(showSnackBar('Erro ao realizar o cadastro!'));
+			return;
+		}
+
 		dispatch(
-			adicionarUsuario({
-				email: emailCadastro,
-				senha: senhaCadastro,
+			addUser({
+				email: emailRegister,
+				password: passwordRegister,
 			}),
 		);
 
-		// limpar os campos de input
-		setEmailCadastro('');
-		setSenhaCadastro('');
+		setEmailRegister('');
+		setPasswordRegister('');
+		setConfirmPasswordRegister('');
 
-		// fechar o modal
 		handleClose();
 	};
 
 	return (
 		<Dialog
-			open={aberto}
+			open={open}
 			onClose={handleClose}
 			aria-labelledby="alert-dialog-title"
 			aria-describedby="alert-dialog-description"
@@ -104,8 +146,7 @@ const ModalSignupUser: React.FC<ModalSignupUserProps> = ({ aberto, mudarAberto }
 				sx: {
 					borderRadius: '20px',
 					boxShadow: 'inset 2px 2px 5px #ffffff34, inset -5px -5px 5px #babecc46',
-					backgroundImage: '',
-					backgroundColor: '#090909aa',
+
 					backdropFilter: 'blur(6px)',
 				},
 			}}>
@@ -131,28 +172,34 @@ const ModalSignupUser: React.FC<ModalSignupUserProps> = ({ aberto, mudarAberto }
 						<Grid item xs={12}>
 							<StyledTextField
 								placeholder="E-mail"
-								type="email"
 								error={!errorEmail.isValid}
 								helperText={errorEmail.helperText}
 								onChange={(event) => {
-									setEmailCadastro(event.currentTarget.value);
+									setEmailRegister(event.currentTarget.value);
 								}}
-								required
-								value={emailCadastro}
+								value={emailRegister}
 							/>
 						</Grid>
 						<Grid item xs={12}>
 							<StyledTextField
 								placeholder="Senha"
-								error={!errorSenha.isValid}
-								helperText={errorSenha.helperText}
+								error={!errorPassword.isValid}
+								helperText={errorPassword.helperText}
 								type="password"
 								onChange={(event) => {
-									setSenhaCadastro(event.currentTarget.value);
+									setPasswordRegister(event.currentTarget.value);
 								}}
-								required
-								inputProps={{ minLength: 6 }}
-								value={senhaCadastro}
+								value={passwordRegister}
+							/>
+							<StyledTextField
+								placeholder="Confirmar Senha"
+								error={!errorConfirmPassword.isValid}
+								helperText={errorConfirmPassword.helperText}
+								type="password"
+								onChange={(event) => {
+									setConfirmPasswordRegister(event.currentTarget.value);
+								}}
+								value={confirmPasswordRegister}
 							/>
 						</Grid>
 					</Grid>
@@ -163,10 +210,7 @@ const ModalSignupUser: React.FC<ModalSignupUserProps> = ({ aberto, mudarAberto }
 					<StyledButton type="button" onClick={handleClose} context="Modal">
 						Cancelar
 					</StyledButton>
-					<StyledButton
-						// disabled={!errorEmail.isValid || !errorSenha.isValid}
-						type="submit"
-						context="Modal">
+					<StyledButton type="submit" context="Modal">
 						Cadastrar
 					</StyledButton>
 				</DialogActions>

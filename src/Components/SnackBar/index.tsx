@@ -1,17 +1,30 @@
 import { Alert } from '@mui/material';
 import Snackbar from '@mui/material/Snackbar';
-import * as React from 'react';
+import { useEffect, useState } from 'react';
 
-interface SnackBarCompProps {
-	message: string;
-	isError: boolean;
-	handleClose: (event: React.SyntheticEvent | Event, reason?: string) => void;
-}
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { showSnackBar } from '../../store/modules/SnackBar/snackBarSlice';
 
-export const SnackBarComp: React.FC<SnackBarCompProps> = ({ message, isError, handleClose }) => {
+export const SnackBarComp = () => {
+	const select = useAppSelector((state) => state.snack.message);
+	const [message, setMessage] = useState('');
+	const [open, setOpen] = useState(false);
+
+	const dispatch = useAppDispatch();
+
+	useEffect(() => {
+		if (select.length > 0) {
+			setMessage(select);
+			setOpen(true);
+			setTimeout(() => {
+				setOpen(false);
+				dispatch(showSnackBar(''));
+			}, 3000);
+		}
+	}, [dispatch, select]);
 	return (
 		<div>
-			<Snackbar open={isError} onClose={handleClose} autoHideDuration={4000}>
+			<Snackbar open={open}>
 				<Alert severity="error">{message}</Alert>
 			</Snackbar>
 		</div>

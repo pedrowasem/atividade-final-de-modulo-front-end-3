@@ -8,11 +8,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 	return (
 		<Box
 			sx={{
-				padding: '0px',
+				padding: '0px ',
+				paddingBottom: '36px',
 				margin: '0px',
-				height: 'min-content',
+				minHeight: '100vh',
 				zIndex: '-1',
-				backgroundImage: 'linear-gradient(to right, #b3b3b3, #292929)',
+				backgroundColor: 'background',
 			}}>
 			{children}
 		</Box>
